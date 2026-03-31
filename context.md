@@ -52,13 +52,11 @@ needed for inference.
 To persist Matrix creds alongside the API key (one-time):
 
 ```bash
-sudo incus exec agent -- bash -lc '
-  cd ~/.nemoclaw
-  cat credentials.json \
-    | jq ". + {MATRIX_HOMESERVER: \"https://matrix.53cr37.co\", MATRIX_ACCESS_TOKEN: \"syt_...\"}" \
-    > credentials.json.tmp && mv credentials.json.tmp credentials.json
-  chmod 600 credentials.json
-'
+node -e "
+  const {saveCredential} = require('nemoclaw/bin/lib/credentials');
+  saveCredential('MATRIX_HOMESERVER', 'https://matrix.53cr37.co');
+  saveCredential('MATRIX_ACCESS_TOKEN', 'syt_...');
+"
 ```
 
 ### How to test on the agent VM
@@ -76,11 +74,11 @@ curl -s -X POST https://matrix.53cr37.co/_matrix/client/v3/login \
 
 # 3. Add Matrix creds to credentials.json (NVIDIA_API_KEY already there from onboard)
 sudo incus exec agent -- bash -lc '
-  cd ~/.nemoclaw
-  cat credentials.json \
-    | jq ". + {MATRIX_HOMESERVER: \"https://matrix.53cr37.co\", MATRIX_ACCESS_TOKEN: \"syt_...\"}" \
-    > credentials.json.tmp && mv credentials.json.tmp credentials.json
-  chmod 600 credentials.json
+  node -e "
+    const {saveCredential} = require('\''nemoclaw/bin/lib/credentials'\'');
+    saveCredential('\''MATRIX_HOMESERVER'\'', '\''https://matrix.53cr37.co'\'');
+    saveCredential('\''MATRIX_ACCESS_TOKEN'\'', '\''syt_...'\'')
+  "
 '
 
 # 4. Test bridge directly (interactive, see output)

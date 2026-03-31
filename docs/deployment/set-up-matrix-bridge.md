@@ -61,14 +61,15 @@ The bridge reads credentials from environment variables or from
 `~/.nemoclaw/credentials.json` (where `nemoclaw onboard` already stores
 `NVIDIA_API_KEY`).
 
-Add the Matrix credentials to `credentials.json`:
+Add the Matrix credentials to `~/.nemoclaw/credentials.json` (where
+`nemoclaw onboard` already stores `NVIDIA_API_KEY`):
 
 ```console
-$ cd ~/.nemoclaw
-$ cat credentials.json \
-    | jq '. + {MATRIX_HOMESERVER: "https://matrix.example.com", MATRIX_ACCESS_TOKEN: "<your-access-token>"}' \
-    > credentials.json.tmp && mv credentials.json.tmp credentials.json
-$ chmod 600 credentials.json
+$ node -e "
+  const {saveCredential} = require('nemoclaw/bin/lib/credentials');
+  saveCredential('MATRIX_HOMESERVER', 'https://matrix.example.com');
+  saveCredential('MATRIX_ACCESS_TOKEN', '<your-access-token>');
+"
 ```
 
 Alternatively, export them as environment variables:
