@@ -97,7 +97,7 @@ stop_service() {
 show_status() {
   mkdir -p "$PIDDIR"
   echo ""
-  for svc in telegram-bridge cloudflared; do
+  for svc in telegram-bridge matrix-bridge cloudflared; do
     if is_running "$svc"; then
       echo -e "  ${GREEN}●${NC} $svc  (PID $(cat "$PIDDIR/$svc.pid"))"
     else
@@ -118,6 +118,7 @@ show_status() {
 do_stop() {
   mkdir -p "$PIDDIR"
   stop_service cloudflared
+  stop_service matrix-bridge
   stop_service telegram-bridge
   info "All services stopped."
 }
@@ -128,6 +129,10 @@ do_start() {
   if [ -z "${TELEGRAM_BOT_TOKEN:-}" ]; then
     warn "TELEGRAM_BOT_TOKEN not set — Telegram bridge will not start."
     warn "Create a bot via @BotFather on Telegram and set the token."
+  fi
+
+  if [ -z "${MATRIX_HOMESERVER:-}" ] || [ -z "${MATRIX_ACCESS_TOKEN:-}" ]; then
+    warn "MATRIX_HOMESERVER and/or MATRIX_ACCESS_TOKEN not set — Matrix bridge will not start."
   fi
 
   command -v node >/dev/null || fail "node not found. Install Node.js first."
@@ -156,7 +161,13 @@ do_start() {
       node "$REPO_DIR/scripts/telegram-bridge.js"
   fi
 
-  # 3. cloudflared tunnel
+  # Matrix bridge (only if homeserver and token provided)
+  if [ -n "${MATRIX_HOMESERVER:-}" ] && [ -n "${MATRIX_ACCESS_TOKEN:-}" ]; then
+    SANDBOX_NAME="$SANDBOX_NAME" start_service matrix-bridge \
+      node "$REPO_DIR/scripts/matrix-bridge.js"
+  fi
+
+  # cloudflared tunnel
   if command -v cloudflared >/dev/null 2>&1; then
     start_service cloudflared \
       cloudflared tunnel --url "http://localhost:$DASHBOARD_PORT"
@@ -196,6 +207,12 @@ do_start() {
     echo "  │  Telegram:    bridge running                        │"
   else
     echo "  │  Telegram:    not started (no token)                │"
+  fi
+
+  if is_running matrix-bridge; then
+    echo "  │  Matrix:      bridge running                        │"
+  else
+    echo "  │  Matrix:      not started (no config)               │"
   fi
 
   echo "  │                                                     │"
