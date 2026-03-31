@@ -28,6 +28,7 @@ const fs = require("fs");
 const path = require("path");
 const { resolveOpenshell } = require("../bin/lib/resolve-openshell");
 const { shellQuote, validateName } = require("../bin/lib/runner");
+const { getCredential } = require("../bin/lib/credentials");
 
 const OPENSHELL = resolveOpenshell();
 if (!OPENSHELL) {
@@ -35,9 +36,9 @@ if (!OPENSHELL) {
   process.exit(1);
 }
 
-const HOMESERVER = process.env.MATRIX_HOMESERVER;
-const ACCESS_TOKEN = process.env.MATRIX_ACCESS_TOKEN;
-const API_KEY = process.env.NVIDIA_API_KEY;
+const HOMESERVER = process.env.MATRIX_HOMESERVER || getCredential("MATRIX_HOMESERVER");
+const ACCESS_TOKEN = process.env.MATRIX_ACCESS_TOKEN || getCredential("MATRIX_ACCESS_TOKEN");
+const API_KEY = getCredential("NVIDIA_API_KEY");
 const SANDBOX = process.env.SANDBOX_NAME || "nemoclaw";
 try {
   validateName(SANDBOX, "SANDBOX_NAME");
