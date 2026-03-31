@@ -57,7 +57,21 @@ Save the access token — you will need it in the next step.
 
 ## Set the Environment Variables
 
-Export the required environment variables:
+The bridge reads credentials from environment variables or from
+`~/.nemoclaw/credentials.json` (where `nemoclaw onboard` already stores
+`NVIDIA_API_KEY`).
+
+Add the Matrix credentials to `credentials.json`:
+
+```console
+$ cd ~/.nemoclaw
+$ cat credentials.json \
+    | jq '. + {MATRIX_HOMESERVER: "https://matrix.example.com", MATRIX_ACCESS_TOKEN: "<your-access-token>"}' \
+    > credentials.json.tmp && mv credentials.json.tmp credentials.json
+$ chmod 600 credentials.json
+```
+
+Alternatively, export them as environment variables:
 
 ```console
 $ export MATRIX_HOMESERVER=https://matrix.example.com
